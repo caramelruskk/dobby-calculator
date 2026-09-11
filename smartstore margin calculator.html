@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>네이버 스마트스토어 마진 계산기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #333;
+            text-align: center;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #888;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .result-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        
+        .result-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        
+        .result-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .result-divider {
+            border-top: 1px solid #ddd;
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        
+        .result-row-label {
+            color: #888;
+        }
+        
+        .result-row-value {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .margin-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid #ddd;
+            margin-top: 12px;
+        }
+        
+        .margin-box {
+            text-align: center;
+        }
+        
+        .margin-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        
+        .margin-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .margin-value.negative {
+            color: #e74c3c;
+        }
+        
+        .margin-rate {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 24px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 마진 계산기</h1>
+        
+        <div class="section">
+            <div class="section-title">일본 원가</div>
+            <div class="form-group">
+                <label for="jpPrice">상품 원가 (¥)</label>
+                <input type="number" id="jpPrice" placeholder="예: 1500" step="0.1" min="0">
+            </div>
+            <div class="form-group">
+                <label for="shippingFeePy">EMS 배송비 (¥)</label>
+                <input type="number" id="shippingFeePy" placeholder="예: 1500" step="0.1" min="0">
+            </div>
+            <div class="form-group">
+                <label for="exchangeRate">환율 (원/엔)</label>
+                <input type="number" id="exchangeRate" placeholder="예: 7.5" step="0.01" min="0">
+                <div class="hint">1엔 = ? 원</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">한국 스토어 판매가</div>
+            <div class="form-group">
+                <label for="salePriceProduct">상품 판매가 (₩)</label>
+                <input type="number" id="salePriceProduct" placeholder="예: 30000" step="100" min="0">
+            </div>
+            <div class="form-group">
+                <label for="salePriceShipping">배송비 (₩)</label>
+                <input type="number" id="salePriceShipping" placeholder="예: 3000" step="100" min="0">
+            </div>
+            <div class="form-group">
+                <label for="feeRate">수수료율 (%)</label>
+                <input type="number" id="feeRate" value="3" step="0.1" min="0" max="100">
+            </div>
+        </div>
+        
+        <button class="button" onclick="calculateMargin()">계산하기</button>
+        
+        <div id="results" class="results">
+            <div class="result-grid">
+                <div class="result-item">
+                    <div class="result-label">상품 원가</div>
+                    <div class="result-value">₩<span id="krCost">0</span></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">배송비</div>
+                    <div class="result-value">₩<span id="shippingDisplay">0</span></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">총 원가</div>
+                    <div class="result-value">₩<span id="totalCost">0</span></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">수수료</div>
+                    <div class="result-value">₩<span id="feeAmount">0</span></div>
+                </div>
+            </div>
+            
+            <div class="result-divider">
+                <div class="result-row">
+                    <span class="result-row-label">판매가 (상품 + 배송)</span>
+                    <span class="result-row-value">₩<span id="totalSalePrice">0</span></span>
+                </div>
+                <div class="result-row">
+                    <span class="result-row-label">순 판매가 (수수료 제외)</span>
+                    <span class="result-row-value">₩<span id="netRevenue">0</span></span>
+                </div>
+            </div>
+            
+            <div class="margin-summary">
+                <div class="margin-box">
+                    <div class="margin-label">남은 마진</div>
+                    <div class="margin-value" id="marginDisplay">₩<span id="margin">0</span></div>
+                </div>
+                <div class="margin-box">
+                    <div class="margin-label">마진율</div>
+                    <div class="margin-rate" id="marginRateDisplay">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function formatNumber(num) {
+            return Math.round(num).toLocaleString('ko-KR');
+        }
+        
+        function calculateMargin() {
+            const jpPrice = parseFloat(document.getElementById('jpPrice').value) || 0;
+            const shippingFeePy = parseFloat(document.getElementById('shippingFeePy').value) || 0;
+            const exchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 0;
+            const salePriceProduct = parseFloat(document.getElementById('salePriceProduct').value) || 0;
+            const salePriceShipping = parseFloat(document.getElementById('salePriceShipping').value) || 0;
+            const feeRate = parseFloat(document.getElementById('feeRate').value) || 3;
+            
+            if (jpPrice <= 0 || exchangeRate <= 0 || salePriceProduct <= 0) {
+                alert('필수 항목을 입력해주세요.');
+                return;
+            }
+            
+            // 계산
+            const krCost = jpPrice * exchangeRate;
+            const shippingKr = shippingFeePy * exchangeRate;
+            const totalCost = krCost + shippingKr;
+            
+            const totalSalePrice = salePriceProduct + salePriceShipping;
+            const feeAmount = totalSalePrice * (feeRate / 100);
+            const netRevenue = totalSalePrice - feeAmount;
+            const margin = netRevenue - totalCost;
+            const marginRate = totalSalePrice > 0 ? (margin / totalSalePrice * 100) : 0;
+            
+            // 결과 표시
+            document.getElementById('krCost').textContent = formatNumber(krCost);
+            document.getElementById('shippingDisplay').textContent = formatNumber(shippingKr);
+            document.getElementById('totalCost').textContent = formatNumber(totalCost);
+            document.getElementById('feeAmount').textContent = formatNumber(feeAmount);
+            document.getElementById('totalSalePrice').textContent = formatNumber(totalSalePrice);
+            document.getElementById('netRevenue').textContent = formatNumber(netRevenue);
+            document.getElementById('margin').textContent = formatNumber(margin);
+            document.getElementById('marginRateDisplay').textContent = (Math.round(marginRate * 10) / 10) + '%';
+            
+            // 마진이 음수면 빨간색으로 표시
+            const marginDisplay = document.getElementById('marginDisplay');
+            if (margin < 0) {
+                marginDisplay.classList.add('negative');
+            } else {
+                marginDisplay.classList.remove('negative');
+            }
+            
+            document.getElementById('results').classList.add('show');
+        }
+        
+        // Enter 키로도 계산 가능
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') calculateMargin();
+            });
+        });
+    </script>
+</body>
+</html>
